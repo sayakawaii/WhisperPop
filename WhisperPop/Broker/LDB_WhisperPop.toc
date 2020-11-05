@@ -1,8 +1,0 @@
-## Interface: 60200
-## Title: LDB: |cff69ccffWhisperPop|r
-## Version: 4.12
-## Author: Abin
-## X-Category: Chat/Communication
-## Dependencies: WhisperPop
-
-Embeds.xml
