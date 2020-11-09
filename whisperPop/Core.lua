@@ -305,7 +305,8 @@ function addon:ProcessChatMsg(name, class, text, inform, bnid)
 
 	-- Names must be in the "name-realm" format except for BN friends
 	if class == "BN" then
-		name = select(3, BNGetFriendInfoByID(bnid or 0)) -- Seemingly better than my original solution, credits to Warbaby
+		--BNGetFriendInfoByID has some issue in 9.0.1, cann't return name by BNid, the input name can work same
+		--name = select(3, BNGetFriendInfoByID(bnid or 0)) -- Seemingly better than my original solution, credits to Warbaby
 		if not name then
 			return
 		end
