@@ -108,7 +108,8 @@ function addon:GetBNInfoFromTag(tag)
 	local count = BNGetNumFriends()
 	local i
 	for i = 1, count do
-		local id, name, battleTag, _, _, _, _, online = BNGetFriendInfo(i)
+		BNetAccountInfo = BNGetFriendInfo(i)
+		local id, name, battleTag, online = BNetAccountInfo.bnetAccountID, BNetAccountInfo.accountName, BNetAccountInfo.battleTag, BNetAccountInfo.isOnline
 		if battleTag == tag then
 			return id, name, online
 		end
@@ -304,9 +305,9 @@ function addon:ProcessChatMsg(name, class, text, inform, bnid)
 	end
 
 	-- Names must be in the "name-realm" format except for BN friends
-	if class == "BN" then
-		--BNGetFriendInfoByID has some issue in 9.0.1, cann't return name by BNid, the input name can work same
-		--name = select(3, BNGetFriendInfoByID(bnid or 0)) -- Seemingly better than my original solution, credits to Warbaby
+	if class == "BN" then		
+		BNetAccountInfo = BNGetFriendInfoByID(bnid or 0)
+		name = BNetAccountInfo.battleTag
 		if not name then
 			return
 		end
