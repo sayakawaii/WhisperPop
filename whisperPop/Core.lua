@@ -305,7 +305,7 @@ function addon:ProcessChatMsg(name, class, text, inform, bnid)
 	end
 
 	-- Names must be in the "name-realm" format except for BN friends
-	if class == "BN" then		
+	if class == "BN" then
 		BNetAccountInfo = BNGetFriendInfoByID(bnid or 0)
 		name = BNetAccountInfo.battleTag
 		if not name then

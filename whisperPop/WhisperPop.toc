@@ -1,6 +1,6 @@
-## Interface: 90001
+## Interface: 90002
 ## Title: WhisperPop
-## Version: 4.33
+## Version: 4.35
 ## Author: Abin
 ## X-Category: Chat/Communication
 ## SavedVariables: WhisperPopDB
