@@ -1,0 +1,6 @@
+﻿<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="lib\LibStub.lua"/>
+	<Script file="lib\CallbackHandler-1.0.lua"/>
+	<Script file="lib\LibDataBroker-1.1.lua"/>
+	<Script file="WhisperPop.lua"/>	
+</Ui>
