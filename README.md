@@ -1,4 +1,4 @@
-# whisperPop
+# WhisperPop
 
 It's a addon for World of WarCraft forked from https://www.curseforge.com/wow/addons/whisperpop
 Bcoz it's long time no update, I decide update it at github
