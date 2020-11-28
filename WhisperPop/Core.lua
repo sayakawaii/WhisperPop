@@ -26,9 +26,8 @@ local BNGetFriendInfo = C_BattleNet.GetFriendAccountInfo
 local BNGetFriendInfoByID = C_BattleNet.GetAccountInfoByID
 local GMChatFrame_IsGM = GMChatFrame_IsGM
 local ChatFrame_GetMessageEventFilters = ChatFrame_GetMessageEventFilters
-local ChatEdit_ChooseBoxForSend = ChatEdit_ChooseBoxForSend
-local ChatEdit_ActivateChat = ChatEdit_ActivateChat
-local ChatEdit_ParseText = ChatEdit_ParseText
+local ChatFrame_SendTell = ChatFrame_SendTell
+local ChatFrame_SendBNetTell = ChatFrame_SendBNetTell
 local InviteUnit = InviteUnit
 local FriendsFrame_ShowDropdown = FriendsFrame_ShowDropdown
 local FriendsFrame_ShowBNDropdown = FriendsFrame_ShowBNDropdown
@@ -189,10 +188,11 @@ function addon:HandleAction(name, action)
 		end
 
 	elseif action == "WHISPER" then
-		local editbox = ChatEdit_ChooseBoxForSend()
-		ChatEdit_ActivateChat(editbox)
-		editbox:SetText("/w "..(bnName or name).." ")
-		ChatEdit_ParseText(editbox, 0)
+		if bnName then
+			ChatFrame_SendBNetTell(bnName)
+		else
+			ChatFrame_SendTell(name)
+		end
 	end
 end
 
