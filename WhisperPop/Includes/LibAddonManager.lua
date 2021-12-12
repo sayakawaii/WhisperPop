@@ -146,13 +146,13 @@ local VERSION = 1.22
 
 local lib = _G.LibAddonManager
 if type(lib) == "table" then
-	local version = lib.version
-	if type(version) == "number" and version >= VERSION then
-		return
-	end
+    local version = lib.version
+    if type(version) == "number" and version >= VERSION then
+        return
+    end
 else
-	lib = {}
-	_G.LibAddonManager = lib
+    lib = {}
+    _G.LibAddonManager = lib
 end
 
 lib.version = VERSION
@@ -167,708 +167,708 @@ local PROFILE_NAME
 -------------------------------------------------------
 
 function lib.tcopy(src, dest)
-	if type(dest) == "table" then
-		wipe(dest)
-	else
-		dest = {}
-	end
+    if type(dest) == "table" then
+        wipe(dest)
+    else
+        dest = {}
+    end
 
-	local k, v
-	for k, v in pairs(src) do
-		if type(v) == "table" then
-			dest[k] = lib.tcopy(v)
-		else
-			dest[k] = v
-		end
-	end
+    local k, v
+    for k, v in pairs(src) do
+        if type(v) == "table" then
+            dest[k] = lib.tcopy(v)
+        else
+            dest[k] = v
+        end
+    end
 
-	return dest
+    return dest
 end
 
 function lib.tfind(t, arg, ...)
-	if type(t) ~= "table" then
-		return
-	end
+    if type(t) ~= "table" then
+        return
+    end
 
-	local funcSearch = type(arg) == "function"
-	local index, data
-	for index, data in ipairs(t) do
-		if funcSearch then
-			if arg(data, ...) then
-				return index
-			end
-		else
-			if data == arg then
-				return index
-			end
-		end
-	end
+    local funcSearch = type(arg) == "function"
+    local index, data
+    for index, data in ipairs(t) do
+        if funcSearch then
+            if arg(data, ...) then
+                return index
+            end
+        else
+            if data == arg then
+                return index
+            end
+        end
+    end
 end
 
 local function Addon_Print(self, msg, r, g, b)
-	DEFAULT_CHAT_FRAME:AddMessage("|cffffff78"..self.title..":|r "..tostring(msg), r or 0.5, g or 0.75, b or 1)
+    DEFAULT_CHAT_FRAME:AddMessage("|cffffff78"..self.title..":|r "..tostring(msg), r or 0.5, g or 0.75, b or 1)
 end
 
 local function Addon_Debug(self, msg)
-	if self.debug then
-		Addon_Print(self, msg, 1, 0.5, 0)
-	end
+    if self.debug then
+        Addon_Print(self, msg, 1, 0.5, 0)
+    end
 end
 
 local function Addon_GetCurProfileName(self)
-	return PROFILE_NAME
+    return PROFILE_NAME
 end
 
 local function Addon_GetProfileNameList(self)
-	local list = {}
-	if self.db and type(self.db.profiles) == "table" then
-		local name
-		for name in pairs(self.db.profiles) do
-			tinsert(list, name)
-		end
-	end
-	return list
+    local list = {}
+    if self.db and type(self.db.profiles) == "table" then
+        local name
+        for name in pairs(self.db.profiles) do
+            tinsert(list, name)
+        end
+    end
+    return list
 end
 
 -- Depreciated
 local function Addon_CopyTable(self, ...)
-	return lib.tcopy(...)
+    return lib.tcopy(...)
 end
 
 local function Addon_GetProfileData(self, profile)
-	if self.db and type(self.db.profiles) == "table" then
-		return self.db.profiles[profile]
-	end
+    if self.db and type(self.db.profiles) == "table" then
+        return self.db.profiles[profile]
+    end
 end
 
 local function Addon_CopyProfile(self, source, dest)
-	if type(source) ~= "string" then
-		source = Addon_GetCurProfileName(self)
-	end
+    if type(source) ~= "string" then
+        source = Addon_GetCurProfileName(self)
+    end
 
-	if type(dest) ~= "string" then
-		dest = Addon_GetCurProfileName(self)
-	end
+    if type(dest) ~= "string" then
+        dest = Addon_GetCurProfileName(self)
+    end
 
-	if source == dest then
-		return
-	end
+    if source == dest then
+        return
+    end
 
-	if self.db and type(self.db.profiles) == "table" then
-		if self.db.profiles[source] then
-			self.db.profiles[dest] = lib.tcopy(self.db.profiles[source])
-		end
-	end
+    if self.db and type(self.db.profiles) == "table" then
+        if self.db.profiles[source] then
+            self.db.profiles[dest] = lib.tcopy(self.db.profiles[source])
+        end
+    end
 end
 
 local function Addon_DeleteProfile(self, profile)
-	if self.db and type(self.db.profiles) == "table" and type(profile) == "string" and profile ~= Addon_GetCurProfileName(self) then
-		self.db.profiles[profile] = nil
-	end
+    if self.db and type(self.db.profiles) == "table" and type(profile) == "string" and profile ~= Addon_GetCurProfileName(self) then
+        self.db.profiles[profile] = nil
+    end
 end
 
 local function Addon_RegisterSlashCmd(self, ...)
-	local UPPER_NAME = strupper(self.name)
+    local UPPER_NAME = strupper(self.name)
 
-	local i
-	for i = 1, select("#", ...) do
-		local cmd = select(i, ...)
-		if type(cmd) == "string" then
-			if strfind(cmd, "/") ~= 1 then
-				cmd = "/"..cmd
-			end
+    local i
+    for i = 1, select("#", ...) do
+        local cmd = select(i, ...)
+        if type(cmd) == "string" then
+            if strfind(cmd, "/") ~= 1 then
+                cmd = "/"..cmd
+            end
 
-			_G["SLASH_"..UPPER_NAME..i] = cmd
-		end
-	end
+            _G["SLASH_"..UPPER_NAME..i] = cmd
+        end
+    end
 
-	SlashCmdList[UPPER_NAME] = function(text)
-		if type(self.OnSlashCmd) == "function" then
-			self:OnSlashCmd(strtrim(text)) -- The addon wants to process the slash command itself
-		elseif type(self.OnClashCmd) == "function" then
-			self:OnClashCmd(strtrim(text)) -- The addon wants to process the slash command itself
-		else
-			local frame = self.optionFrame or self.optionPage or self.frame
-			if type(frame) ~= "table" then
-				return
-			end
+    SlashCmdList[UPPER_NAME] = function(text)
+        if type(self.OnSlashCmd) == "function" then
+            self:OnSlashCmd(strtrim(text)) -- The addon wants to process the slash command itself
+        elseif type(self.OnClashCmd) == "function" then
+            self:OnClashCmd(strtrim(text)) -- The addon wants to process the slash command itself
+        else
+            local frame = self.optionFrame or self.optionPage or self.frame
+            if type(frame) ~= "table" then
+                return
+            end
 
-			if type(frame.Toggle) == "function" then
-				frame:Toggle()
-			elseif type(frame.Open) == "function" then
-				frame:Open()
-			elseif frame:IsShown() then
-				frame:Hide()
-			else
-				frame:Show()
-			end
-		end
-	end
+            if type(frame.Toggle) == "function" then
+                frame:Toggle()
+            elseif type(frame.Open) == "function" then
+                frame:Open()
+            elseif frame:IsShown() then
+                frame:Hide()
+            else
+                frame:Show()
+            end
+        end
+    end
 end
 
 local function Addon_RegisterDB(self, dbName, hasCharDB)
-	if type(dbName) ~= "string" then
-		dbName = nil
-	end
+    if type(dbName) ~= "string" then
+        dbName = nil
+    end
 
-	if dbName then
-		local private = self[PRIVATE]
-		private.dbName, private.hasCharDB = dbName, hasCharDB
-	end
+    if dbName then
+        local private = self[PRIVATE]
+        private.dbName, private.hasCharDB = dbName, hasCharDB
+    end
 end
 
 local function Addon_RegisterBindingClick(self, button, name, text)
-	if type(name) ~= "string" or type(button) ~= "table" then
-		return
-	end
+    if type(name) ~= "string" or type(button) ~= "table" then
+        return
+    end
 
-	--local header = "BINDING_HEADER_"..strupper(self.name).."_TITLE"
-	--if not _G[header] then
-	--	_G[header] = self.title
-	--end
+    --local header = "BINDING_HEADER_"..strupper(self.name).."_TITLE"
+    --if not _G[header] then
+    --    _G[header] = self.title
+    --end
 
-	if type(text) == "string" then
-		_G["BINDING_NAME_"..name] = text
-	end
+    if type(text) == "string" then
+        _G["BINDING_NAME_"..name] = text
+    end
 
-	button.bindingName, button.bindingText = name, text
-	lib._bindingList[name] = button
+    button.bindingName, button.bindingText = name, text
+    lib._bindingList[name] = button
 end
 
 local function EEO_RegisterEvent(self, event, method)
-	if type(method) ~= "function" and type(method) ~= "string" then
-		method = nil
-	end
+    if type(method) ~= "function" and type(method) ~= "string" then
+        method = nil
+    end
 
-	local frame = self[PRIVATE].frame
-	if not frame:IsEventRegistered(event) then
-		frame:RegisterEvent(event)
-	end
-	frame.events[event] = method
+    local frame = self[PRIVATE].frame
+    if not frame:IsEventRegistered(event) then
+        frame:RegisterEvent(event)
+    end
+    frame.events[event] = method
 end
 
 local function EEO_UnregisterEvent(self, event)
-	local frame = self[PRIVATE].frame
-	frame.events[event] = nil
-	if frame:IsEventRegistered(event) then
-		frame:UnregisterEvent(event)
-	end
+    local frame = self[PRIVATE].frame
+    frame.events[event] = nil
+    if frame:IsEventRegistered(event) then
+        frame:UnregisterEvent(event)
+    end
 end
 
 local function EEO_IsEventRegistered(self, event)
-	return self[PRIVATE].frame:IsEventRegistered(event)
+    return self[PRIVATE].frame:IsEventRegistered(event)
 end
 
 local function EEO_RegisterAllEvents(self)
-	return self[PRIVATE].frame:RegisterAllEvents()
+    return self[PRIVATE].frame:RegisterAllEvents()
 end
 
 local function EEO_UnregisterAllEvents(self)
-	return self[PRIVATE].frame:UnregisterAllEvents()
+    return self[PRIVATE].frame:UnregisterAllEvents()
 end
 
 local function EEO_SetInterval(self, interval)
-	if type(interval) ~= "number" or interval < 0.2 then
-		interval = 0.2
-	end
+    if type(interval) ~= "number" or interval < 0.2 then
+        interval = 0.2
+    end
 
-	local frame = self[PRIVATE].frame
-	frame.elapsed = 0
-	frame.tickSeconds = interval
+    local frame = self[PRIVATE].frame
+    frame.elapsed = 0
+    frame.tickSeconds = interval
 end
 
 local function EEO_RegisterTick(self, interval)
-	EEO_SetInterval(self, interval)
-	self[PRIVATE].frame:Show()
+    EEO_SetInterval(self, interval)
+    self[PRIVATE].frame:Show()
 end
 
 local function EEO_UnregisterTick(self)
-	local frame = self[PRIVATE].frame
-	frame:Hide()
-	frame.tickSeconds = nil
+    local frame = self[PRIVATE].frame
+    frame:Hide()
+    frame.tickSeconds = nil
 end
 
 local function EEO_IsTicking(self)
-	return self[PRIVATE].frame:IsShown()
+    return self[PRIVATE].frame:IsShown()
 end
 
 local function EEOFrame_OnEvent(self, event, ...)
-	local object = self.parentObject
-	if type(object.OnEvent) == "function" then
-		object:OnEvent(event, ...)
-	else
-		local func = self.events[event]
-		if not func then
-			func = object[event]
-		elseif type(func) ~= "function" then -- string, number, etc
-			func = object[func]
-		end
+    local object = self.parentObject
+    if type(object.OnEvent) == "function" then
+        object:OnEvent(event, ...)
+    else
+        local func = self.events[event]
+        if not func then
+            func = object[event]
+        elseif type(func) ~= "function" then -- string, number, etc
+            func = object[func]
+        end
 
-		if type(func) == "function" then
-			func(object, ...)
-		end
-	end
+        if type(func) == "function" then
+            func(object, ...)
+        end
+    end
 end
 
 local function EEOFrame_OnUpdate(self, elapsed)
-	local tickSeconds = self.tickSeconds
-	if not tickSeconds then
-		self:Hide()
-		return
-	end
+    local tickSeconds = self.tickSeconds
+    if not tickSeconds then
+        self:Hide()
+        return
+    end
 
-	local updateElapsed = (self.elapsed or 0) + elapsed
-	if updateElapsed >= tickSeconds then
-		local object = self.parentObject
-		if object.OnTick then
-			object:OnTick(updateElapsed)
-		end
-		updateElapsed = 0
-	end
-	self.elapsed = updateElapsed
+    local updateElapsed = (self.elapsed or 0) + elapsed
+    if updateElapsed >= tickSeconds then
+        local object = self.parentObject
+        if object.OnTick then
+            object:OnTick(updateElapsed)
+        end
+        updateElapsed = 0
+    end
+    self.elapsed = updateElapsed
 end
 
 local function Lib_EmbedEventObject(object)
-	if type(object) ~= "table" then
-		object = {}
-	end
+    if type(object) ~= "table" then
+        object = {}
+    end
 
-	local private = lib._SetupTable(object, PRIVATE)
-	local frame = CreateFrame("Frame")
-	private.frame = frame
-	frame.parentObject = object
-	frame.events = {}
-	frame:Hide()
+    local private = lib._SetupTable(object, PRIVATE)
+    local frame = CreateFrame("Frame",nil, UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+    private.frame = frame
+    frame.parentObject = object
+    frame.events = {}
+    frame:Hide()
 
-	frame:SetScript("OnEvent", EEOFrame_OnEvent)
-	frame:SetScript("OnUpdate", EEOFrame_OnUpdate)
+    frame:SetScript("OnEvent", EEOFrame_OnEvent)
+    frame:SetScript("OnUpdate", EEOFrame_OnUpdate)
 
-	object.RegisterEvent = EEO_RegisterEvent
-	object.UnregisterEvent = EEO_UnregisterEvent
-	object.IsEventRegistered = EEO_IsEventRegistered
-	object.RegisterAllEvents = EEO_RegisterAllEvents
-	object.UnregisterAllEvents = EEO_UnregisterAllEvents
+    object.RegisterEvent = EEO_RegisterEvent
+    object.UnregisterEvent = EEO_UnregisterEvent
+    object.IsEventRegistered = EEO_IsEventRegistered
+    object.RegisterAllEvents = EEO_RegisterAllEvents
+    object.UnregisterAllEvents = EEO_UnregisterAllEvents
 
-	object.RegisterTick = EEO_RegisterTick
-	object.UnregisterTick = EEO_UnregisterTick
-	object.SetInterval = EEO_SetInterval
-	object.IsTicking = EEO_IsTicking
+    object.RegisterTick = EEO_RegisterTick
+    object.UnregisterTick = EEO_UnregisterTick
+    object.SetInterval = EEO_SetInterval
+    object.IsTicking = EEO_IsTicking
 
-	return object
+    return object
 end
 
 local function BCO_BroadcastEvent(self, event, ...)
-	local callbacks = self[PRIVATE].broadcastCallbacks[event]
-	if not callbacks then
-		return
-	end
+    local callbacks = self[PRIVATE].broadcastCallbacks[event]
+    if not callbacks then
+        return
+    end
 
-	local i
-	for i = 1, #callbacks do
-		local arg1 = callbacks[i].arg1
-		if arg1 then
-			callbacks[i].func(arg1, ...)
-		else
-			callbacks[i].func(...)
-		end
-	end
+    local i
+    for i = 1, #callbacks do
+        local arg1 = callbacks[i].arg1
+        if arg1 then
+            callbacks[i].func(arg1, ...)
+        else
+            callbacks[i].func(...)
+        end
+    end
 end
 
 local function BCO_RegisterEventCallback(self, event, func, arg1)
-	if type(event) ~= "string" or type(func) ~= "function" then
-		return
-	end
+    if type(event) ~= "string" or type(func) ~= "function" then
+        return
+    end
 
-	local list = self[PRIVATE].broadcastCallbacks
-	local callbacks = list[event]
-	if not callbacks then
-		callbacks = {}
-		list[event] = callbacks
-	end
+    local list = self[PRIVATE].broadcastCallbacks
+    local callbacks = list[event]
+    if not callbacks then
+        callbacks = {}
+        list[event] = callbacks
+    end
 
-	tinsert(callbacks, { func = func, arg1 = arg1 })
+    tinsert(callbacks, { func = func, arg1 = arg1 })
 end
 
 local OPTION_EVENT_PREFX = "OnOptionChanged_" -- Option event name prefix
 
 local function BCO_BroadcastOptionEvent(self, option, ...)
-	if type(option) == "string" then
-		BCO_BroadcastEvent(self, OPTION_EVENT_PREFX..option, ...)
-	end
+    if type(option) == "string" then
+        BCO_BroadcastEvent(self, OPTION_EVENT_PREFX..option, ...)
+    end
 end
 
 local function BCO_RegisterOptionCallback(self, option, func, arg1)
-	if type(option) == "string" then
-		BCO_RegisterEventCallback(self, OPTION_EVENT_PREFX..option, func, arg1)
-	end
+    if type(option) == "string" then
+        BCO_RegisterEventCallback(self, OPTION_EVENT_PREFX..option, func, arg1)
+    end
 end
 
 local function Lib_EmbedBroadcastObject(object)
-	if type(object) ~= "table" then
-		object = {}
-	end
+    if type(object) ~= "table" then
+        object = {}
+    end
 
-	local private = lib._SetupTable(object, PRIVATE)
-	private.broadcastCallbacks = {}
+    local private = lib._SetupTable(object, PRIVATE)
+    private.broadcastCallbacks = {}
 
-	object.BroadcastEvent = BCO_BroadcastEvent
-	object.RegisterEventCallback = BCO_RegisterEventCallback
-	object.BroadcastOptionEvent = BCO_BroadcastOptionEvent
-	object.RegisterOptionCallback = BCO_RegisterOptionCallback
+    object.BroadcastEvent = BCO_BroadcastEvent
+    object.RegisterEventCallback = BCO_RegisterEventCallback
+    object.BroadcastOptionEvent = BCO_BroadcastOptionEvent
+    object.RegisterOptionCallback = BCO_RegisterOptionCallback
 
-	return object
+    return object
 end
 
 local function Module_IsEnabled(self)
-	return self[PRIVATE].enabled
+    return self[PRIVATE].enabled
 end
 
 local function Module_Enable(self)
-	if Module_IsEnabled(self) then
-		return
-	end
+    if Module_IsEnabled(self) then
+        return
+    end
 
-	self[PRIVATE].enabled = 1
-	if type(self.OnEnable) == "function" then
-		self:OnEnable()
-	end
+    self[PRIVATE].enabled = 1
+    if type(self.OnEnable) == "function" then
+        self:OnEnable()
+    end
 end
 
 local function Module_Disable(self)
-	if not Module_IsEnabled(self) then
-		return
-	end
+    if not Module_IsEnabled(self) then
+        return
+    end
 
-	self[PRIVATE].enabled = nil
-	self:UnregisterAllEvents()
-	self:UnregisterTick()
+    self[PRIVATE].enabled = nil
+    self:UnregisterAllEvents()
+    self:UnregisterTick()
 
-	if type(self.OnDisable) == "function" then
-		self:OnDisable()
-	end
+    if type(self.OnDisable) == "function" then
+        self:OnDisable()
+    end
 end
 
 local function Addon_EnumModules(self, func, ...)
-	if type(func) == "function" then
-		local modules = self[PRIVATE].modules
-		local  i
-		for i = 1, #modules do
-			func(modules[i], ...)
-		end
-	end
+    if type(func) == "function" then
+        local modules = self[PRIVATE].modules
+        local  i
+        for i = 1, #modules do
+            func(modules[i], ...)
+        end
+    end
 end
 
 local function Addon_CallAllModules(self, method, ...)
-	local modules = self[PRIVATE].modules
-	local  i
-	for i = 1, #modules do
-		local module = modules[i]
-		local func = module[method]
-		if type(func) == "function" then
-			func(module, ...)
-		end
-	end
+    local modules = self[PRIVATE].modules
+    local  i
+    for i = 1, #modules do
+        local module = modules[i]
+        local func = module[method]
+        if type(func) == "function" then
+            func(module, ...)
+        end
+    end
 end
 
 local function Addon_CallAllEnabledModules(self, method, ...)
-	local modules = self[PRIVATE].modules
-	local  i
-	for i = 1, #modules do
-		local module = modules[i]
-		if Module_IsEnabled(module) then
-			local func = module[method]
-			if type(func) == "function" then
-				func(module, ...)
-			end
-		end
-	end
+    local modules = self[PRIVATE].modules
+    local  i
+    for i = 1, #modules do
+        local module = modules[i]
+        if Module_IsEnabled(module) then
+            local func = module[method]
+            if type(func) == "function" then
+                func(module, ...)
+            end
+        end
+    end
 end
 
 local function Addon_GetModule(self, key)
-	local modules = self[PRIVATE].modules
-	if type(key) ~= "string" then
-		return modules[key]
-	end
+    local modules = self[PRIVATE].modules
+    if type(key) ~= "string" then
+        return modules[key]
+    end
 
-	local _, module
-	for _, module in ipairs(modules) do
-		if module.key == key then
-			return module
-		end
-	end
+    local _, module
+    for _, module in ipairs(modules) do
+        if module.key == key then
+            return module
+        end
+    end
 end
 
 local function Addon_NumModules(self)
-	return #(self[PRIVATE].modules)
+    return #(self[PRIVATE].modules)
 end
 
 local function Addon_CreateModule(self, key, dbType, ...)
-	if type(key) ~= "string" then
-		error(format("bad argument #1 to 'addon:CreateModule' (string expected, got %s)", type(key)))
-		return
-	end
+    if type(key) ~= "string" then
+        error(format("bad argument #1 to 'addon:CreateModule' (string expected, got %s)", type(key)))
+        return
+    end
 
-	local module = Addon_GetModule(self, key)
-	if module then
-		error(format("bad argument #1 to 'addon:CreateModule' (key '%s' already used)", key))
-		return
-	end
+    local module = Addon_GetModule(self, key)
+    if module then
+        error(format("bad argument #1 to 'addon:CreateModule' (key '%s' already used)", key))
+        return
+    end
 
-	if type(dbType) == "string" then
-		dbType = strupper(dbType)
-	else
-		dbType = nil
-	end
+    if type(dbType) == "string" then
+        dbType = strupper(dbType)
+    else
+        dbType = nil
+    end
 
-	local verifyFunc = self.OnVerifyModule
-	if type(verifyFunc) == "function" and not verifyFunc(self, key, dbType, ...) then
-		return
-	end
+    local verifyFunc = self.OnVerifyModule
+    if type(verifyFunc) == "function" and not verifyFunc(self, key, dbType, ...) then
+        return
+    end
 
-	module = Lib_EmbedEventObject()
+    module = Lib_EmbedEventObject()
 
-	module.key, module.dbType = key, dbType
-	module.IsEnabled = Module_IsEnabled
-	module.Enable = Module_Enable
-	module.Disable = Module_Disable
+    module.key, module.dbType = key, dbType
+    module.IsEnabled = Module_IsEnabled
+    module.Enable = Module_Enable
+    module.Disable = Module_Disable
 
-	tinsert(self[PRIVATE].modules, module)
+    tinsert(self[PRIVATE].modules, module)
 
-	if type(self.OnCreateModule) == "function" then
-		self:OnCreateModule(module, key, ...)
-	end
+    if type(self.OnCreateModule) == "function" then
+        self:OnCreateModule(module, key, ...)
+    end
 
-	return module
+    return module
 end
 
 local function Addon_RegisterLocale(self, name, locale, data)
-	if type(name) == "string" and type(data) == "table" and type(locale) == "string" then
-		local moduleLocales = self[PRIVATE].moduleLocales
+    if type(name) == "string" and type(data) == "table" and type(locale) == "string" then
+        local moduleLocales = self[PRIVATE].moduleLocales
 
-		if not moduleLocales[name] then
-			moduleLocales[name] = {}
-		end
+        if not moduleLocales[name] then
+            moduleLocales[name] = {}
+        end
 
-		if not moduleLocales[name][locale] then
-			moduleLocales[name][locale] = data
-		end
-	end
+        if not moduleLocales[name][locale] then
+            moduleLocales[name][locale] = data
+        end
+    end
 end
 
 local function Addon_GetLocale(self, name, locale)
-	local data = self[PRIVATE].moduleLocales[name]
-	if data then
-		if type(locale) ~= "string" then
-			locale = GetLocale()
-		end
+    local data = self[PRIVATE].moduleLocales[name]
+    if data then
+        if type(locale) ~= "string" then
+            locale = GetLocale()
+        end
 
-		return data[locale] or data.enUS
-	end
+        return data[locale] or data.enUS
+    end
 end
 
 local function Addon_EmbedEventObject(self, object)
-	return Lib_EmbedEventObject(object)
+    return Lib_EmbedEventObject(object)
 end
 
 local function Addon_VerifyDBVersion(self, version, t)
-	if type(version) ~= "number" then
-		version = 0
-	end
+    if type(version) ~= "number" then
+        version = 0
+    end
 
-	if type(t) ~= "table" then
-		t = self.db
-	end
+    if type(t) ~= "table" then
+        t = self.db
+    end
 
-	if t and type(t.version) == "number" then
-		return t.version >= version
-	end
+    if t and type(t.version) == "number" then
+        return t.version >= version
+    end
 end
 
 local function Addon_Initialized(self)
-	return self[PRIVATE].initDone
+    return self[PRIVATE].initDone
 end
 
 local function EditBox_Highlight(self)
-	self:SetFocus()
-	self:HighlightText()
+    self:SetFocus()
+    self:HighlightText()
 end
 
 local function PopupData_EditBoxOnEnterPressed(self)
-	local text = strtrim(self:GetText())
-	local parent = self:GetParent()
-	local func = parent.data2
-	if text == "" or (type(func) == "function" and func(parent.data, text)) then
-		EditBox_Highlight(self)
-	else
-		self:GetParent():Hide()
-	end
+    local text = strtrim(self:GetText())
+    local parent = self:GetParent()
+    local func = parent.data2
+    if text == "" or (type(func) == "function" and func(parent.data, text)) then
+        EditBox_Highlight(self)
+    else
+        self:GetParent():Hide()
+    end
 end
 
 local function PopupData_OnShow(self)
-	local editBox = self.editBox
-	if editBox:IsShown() and editBox:GetText() ~= "" then
-		EditBox_Highlight(editBox)
-	end
+    local editBox = self.editBox
+    if editBox:IsShown() and editBox:GetText() ~= "" then
+        EditBox_Highlight(editBox)
+    end
 end
 
 local function PopupData_EditBoxOnEscapePressed(self)
-	self:GetParent():Hide()
+    self:GetParent():Hide()
 end
 
 local function PopupData_OnAccept(self, arg1, func)
-	if type(func) ~= "function" then
-		return
-	end
+    if type(func) ~= "function" then
+        return
+    end
 
-	local editBox = self.editBox
-	if not editBox:IsShown() then
-		return func(arg1)
-	end
+    local editBox = self.editBox
+    if not editBox:IsShown() then
+        return func(arg1)
+    end
 
-	local text = strtrim(editBox:GetText())
-	if text == "" or func(arg1, text) then
-		EditBox_Highlight(editBox)
-		return 1
-	end
+    local text = strtrim(editBox:GetText())
+    if text == "" or func(arg1, text) then
+        EditBox_Highlight(editBox)
+        return 1
+    end
 end
 
 local function ParsePopupButtons(buttons)
-	if buttons == "MB_OK" then
-		return OKAY
-	end
+    if buttons == "MB_OK" then
+        return OKAY
+    end
 
-	if buttons == "MB_YESNO" then
-		return YES, NO
-	end
+    if buttons == "MB_YESNO" then
+        return YES, NO
+    end
 
-	if buttons == "MB_ACCEPTCANCEL" then
-		return ACCEPT, CANCEL
-	end
+    if buttons == "MB_ACCEPTCANCEL" then
+        return ACCEPT, CANCEL
+    end
 
-	if buttons == "MB_ACCEPTDECLINE" then
-		return ACCEPT, DECLINE
-	end
+    if buttons == "MB_ACCEPTDECLINE" then
+        return ACCEPT, DECLINE
+    end
 
-	return OKAY, CANCEL -- "MB_OKCANCEL" or others
+    return OKAY, CANCEL -- "MB_OKCANCEL" or others
 end
 
 local function Addon_PopupShowConfirm(self, text, func, arg1, buttons)
-	local data = self[PRIVATE].popupData
-	data.text =  text
-	data.hasEditBox = nil
-	data.editBoxWidth = nil
-	data.button1, data.button2, data.button3 = ParsePopupButtons(buttons)
+    local data = self[PRIVATE].popupData
+    data.text =  text
+    data.hasEditBox = nil
+    data.editBoxWidth = nil
+    data.button1, data.button2, data.button3 = ParsePopupButtons(buttons)
 
-	local dialog = StaticPopup_Show(self[PRIVATE].popupId)
-	if dialog then
-		dialog.data = arg1
-		dialog.data2 = func
-		return dialog
-	end
+    local dialog = StaticPopup_Show(self[PRIVATE].popupId)
+    if dialog then
+        dialog.data = arg1
+        dialog.data2 = func
+        return dialog
+    end
 end
 
 local function Addon_PopupShowAck(self, text, func, arg1)
-	return Addon_PopupShowConfirm(self, text, func, arg1, "MB_OK")
+    return Addon_PopupShowConfirm(self, text, func, arg1, "MB_OK")
 end
 
 local function Addon_PopupShowInput(self, text, func, arg1, default, wide)
-	local data = self[PRIVATE].popupData
-	data.text =  text
-	data.hasEditBox = 1
-	data.editBoxWidth = wide and 260 or nil
-	data.button1, data.button2, data.button3 = ParsePopupButtons()
+    local data = self[PRIVATE].popupData
+    data.text =  text
+    data.hasEditBox = 1
+    data.editBoxWidth = wide and 260 or nil
+    data.button1, data.button2, data.button3 = ParsePopupButtons()
 
-	local dialog = StaticPopup_Show(self[PRIVATE].popupId)
-	if dialog then
-		dialog.data = arg1
-		dialog.data2 = func
-		if default then
-			dialog.editBox:SetText(tostring(default))
-			return dialog
-		end
-	end
+    local dialog = StaticPopup_Show(self[PRIVATE].popupId)
+    if dialog then
+        dialog.data = arg1
+        dialog.data2 = func
+        if default then
+            dialog.editBox:SetText(tostring(default))
+            return dialog
+        end
+    end
 end
 
 local function Addon_PopupHide(self)
-	StaticPopup_Hide(self[PRIVATE].popupId)
+    StaticPopup_Hide(self[PRIVATE].popupId)
 end
 
 function lib:CreateAddon(name, addon)
-	if type(name) ~= "string" then
-		error(format("bad argument #1 to 'LibAddonManager:CreateAddon' (string expected, got %s)", type(name)))
-		return
-	end
+    if type(name) ~= "string" then
+        error(format("bad argument #1 to 'LibAddonManager:CreateAddon' (string expected, got %s)", type(name)))
+        return
+    end
 
-	if type(addon) ~= "table" then
-		error(format("bad argument #2 to 'LibAddonManager:CreateAddon' (table expected, got %s)", type(addon)))
-		return
-	end
+    if type(addon) ~= "table" then
+        error(format("bad argument #2 to 'LibAddonManager:CreateAddon' (table expected, got %s)", type(addon)))
+        return
+    end
 
-	if _G[name] then
-		error(format("'LibAddonManager:CreateAddon' failed to register addon '%s' (object already exists)", name))
-		return
-	end
+    if _G[name] then
+        error(format("'LibAddonManager:CreateAddon' failed to register addon '%s' (object already exists)", name))
+        return
+    end
 
-	_G[name] = addon
-	addon.version = GetAddOnMetadata(name, "Version") or "1.0"
-	addon.numericVersion = tonumber(addon.version) or 1.0
-	addon.name = name
-	addon.title = name -- This may be changed by developers into other locales, but just use name for now
-	lib.CopyPlayerInfo(addon)
+    _G[name] = addon
+    addon.version = GetAddOnMetadata(name, "Version") or "1.0"
+    addon.numericVersion = tonumber(addon.version) or 1.0
+    addon.name = name
+    addon.title = name -- This may be changed by developers into other locales, but just use name for now
+    lib.CopyPlayerInfo(addon)
 
-	local popupId = "LibAddonManager_PopupData_"..name
+    local popupId = "LibAddonManager_PopupData_"..name
 
-	local popupData = {
-		exclusive = 1,
-		whileDead = 1,
-		hideOnEscape = 1,
-		OnAccept = PopupData_OnAccept,
-		EditBoxOnEnterPressed = PopupData_EditBoxOnEnterPressed,
-		EditBoxOnEscapePressed = PopupData_EditBoxOnEscapePressed,
-		OnShow = PopupData_OnShow,
-	}
+    local popupData = {
+        exclusive = 1,
+        whileDead = 1,
+        hideOnEscape = 1,
+        OnAccept = PopupData_OnAccept,
+        EditBoxOnEnterPressed = PopupData_EditBoxOnEnterPressed,
+        EditBoxOnEscapePressed = PopupData_EditBoxOnEscapePressed,
+        OnShow = PopupData_OnShow,
+    }
 
-	StaticPopupDialogs[popupId] = popupData
+    StaticPopupDialogs[popupId] = popupData
 
-	addon[PRIVATE] = { modules = {}, moduleLocales = {}, popupData = popupData, popupId = popupId }
-	Lib_EmbedEventObject(addon)
-	Lib_EmbedBroadcastObject(addon)
+    addon[PRIVATE] = { modules = {}, moduleLocales = {}, popupData = popupData, popupId = popupId }
+    Lib_EmbedEventObject(addon)
+    Lib_EmbedBroadcastObject(addon)
 
-	addon.Print = Addon_Print
-	addon.Debug = Addon_Debug
-	addon.RegisterDB = Addon_RegisterDB
-	addon.GetCurProfileName = Addon_GetCurProfileName
-	addon.GetProfileNameList = Addon_GetProfileNameList
-	addon.GetProfileData = Addon_GetProfileData
-	addon.CopyProfile = Addon_CopyProfile
-	addon.DeleteProfile = Addon_DeleteProfile
-	addon.Initialized = Addon_Initialized
-	addon.RegisterBindingClick = Addon_RegisterBindingClick
-	addon.RegisterSlashCmd = Addon_RegisterSlashCmd
-	addon.RegisterLocale = Addon_RegisterLocale
-	addon.GetLocale = Addon_GetLocale
-	addon.EmbedEventObject = Addon_EmbedEventObject
-	addon.VerifyDBVersion = Addon_VerifyDBVersion
-	addon.PopupShowConfirm = Addon_PopupShowConfirm
-	addon.PopupShowAck = Addon_PopupShowAck
-	addon.PopupShowInput = Addon_PopupShowInput
-	addon.PopupHide = Addon_PopupHide
+    addon.Print = Addon_Print
+    addon.Debug = Addon_Debug
+    addon.RegisterDB = Addon_RegisterDB
+    addon.GetCurProfileName = Addon_GetCurProfileName
+    addon.GetProfileNameList = Addon_GetProfileNameList
+    addon.GetProfileData = Addon_GetProfileData
+    addon.CopyProfile = Addon_CopyProfile
+    addon.DeleteProfile = Addon_DeleteProfile
+    addon.Initialized = Addon_Initialized
+    addon.RegisterBindingClick = Addon_RegisterBindingClick
+    addon.RegisterSlashCmd = Addon_RegisterSlashCmd
+    addon.RegisterLocale = Addon_RegisterLocale
+    addon.GetLocale = Addon_GetLocale
+    addon.EmbedEventObject = Addon_EmbedEventObject
+    addon.VerifyDBVersion = Addon_VerifyDBVersion
+    addon.PopupShowConfirm = Addon_PopupShowConfirm
+    addon.PopupShowAck = Addon_PopupShowAck
+    addon.PopupShowInput = Addon_PopupShowInput
+    addon.PopupHide = Addon_PopupHide
 
-	addon.tcopy = lib.tcopy
-	addon.tfind = lib.tfind
+    addon.tcopy = lib.tcopy
+    addon.tfind = lib.tfind
 
-	addon.CreateModule = Addon_CreateModule
-	addon.NumModules = Addon_NumModules
-	addon.GetModule = Addon_GetModule
-	addon.EnumModules = Addon_EnumModules
-	addon.CallAllModules = Addon_CallAllModules
-	addon.CallAllEnabledModules = Addon_CallAllEnabledModules
+    addon.CreateModule = Addon_CreateModule
+    addon.NumModules = Addon_NumModules
+    addon.GetModule = Addon_GetModule
+    addon.EnumModules = Addon_EnumModules
+    addon.CallAllModules = Addon_CallAllModules
+    addon.CallAllEnabledModules = Addon_CallAllEnabledModules
 
-	-- Depreciated functions but stay for downward compatibility
-	addon.CopyTable = Addon_CopyTable
+    -- Depreciated functions but stay for downward compatibility
+    addon.CopyTable = Addon_CopyTable
 
-	tinsert(lib._addonList, addon)
-	return addon
+    tinsert(lib._addonList, addon)
+    return addon
 end
 
 -------------------------------------------------------
@@ -876,125 +876,125 @@ end
 -------------------------------------------------------
 
 function lib.CopyPlayerInfo(addon)
-	local key, val
-	for key, val in pairs(PLAYER_INFO) do
-		addon[key] = val
-	end
+    local key, val
+    for key, val in pairs(PLAYER_INFO) do
+        addon[key] = val
+    end
 end
 
 local function Lib_UpdatePlayerInfo()
-	PLAYER_INFO.player = UnitName("player")
-	PLAYER_INFO.realm = GetRealmName()
-	PLAYER_INFO.faction = UnitFactionGroup("player")
-	PLAYER_INFO.class = select(2, UnitClass("player"))
-	PLAYER_INFO.race = select(2, UnitRace("player"))
-	PLAYER_INFO.guid = UnitGUID("player")
-	PROFILE_NAME = PLAYER_INFO.player.." - "..PLAYER_INFO.realm
+    PLAYER_INFO.player = UnitName("player")
+    PLAYER_INFO.realm = GetRealmName()
+    PLAYER_INFO.faction = UnitFactionGroup("player")
+    PLAYER_INFO.class = select(2, UnitClass("player"))
+    PLAYER_INFO.race = select(2, UnitRace("player"))
+    PLAYER_INFO.guid = UnitGUID("player")
+    PROFILE_NAME = PLAYER_INFO.player.." - "..PLAYER_INFO.realm
 end
 
 Lib_UpdatePlayerInfo()
 
 function lib._SetupTable(parent, key, isFrame)
-	if type(parent) ~= "table" or not key then
-		return
-	end
+    if type(parent) ~= "table" or not key then
+        return
+    end
 
-	local t = parent[key]
-	local isNew
+    local t = parent[key]
+    local isNew
 
-	if type(t) ~= "table" then
-		isNew = 1
-		if isFrame then
-			t = CreateFrame("Frame")
-		else
-			t = {}
-		end
-		parent[key] = t
-	end
-	return t, isNew
+    if type(t) ~= "table" then
+        isNew = 1
+        if isFrame then
+            t = CreateFrame("Frame",nil, UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+        else
+            t = {}
+        end
+        parent[key] = t
+    end
+    return t, isNew
 end
 
 lib._SetupTable(lib, "_addonList")
 lib._SetupTable(lib, "_bindingList")
 
 local function Module_InitializeDB(self, db, chardb)
-	local moduledb, moduledbNew, moduleChardb, moduleChardbNew
+    local moduledb, moduledbNew, moduleChardb, moduleChardbNew
 
-	if strfind(self.dbType or "", "ACCOUNT") then
-		local temp = lib._SetupTable(db, "modules")
-		moduledb, moduledbNew = lib._SetupTable(temp, self.key)
-	end
+    if strfind(self.dbType or "", "ACCOUNT") then
+        local temp = lib._SetupTable(db, "modules")
+        moduledb, moduledbNew = lib._SetupTable(temp, self.key)
+    end
 
-	if strfind(self.dbType or "", "CHAR") then
-		local temp = lib._SetupTable(chardb, "modules")
-		moduleChardb, moduleChardbNew = lib._SetupTable(temp, self.key)
-	end
+    if strfind(self.dbType or "", "CHAR") then
+        local temp = lib._SetupTable(chardb, "modules")
+        moduleChardb, moduleChardbNew = lib._SetupTable(temp, self.key)
+    end
 
-	self.db, self.chardb = moduledb, moduleChardb
+    self.db, self.chardb = moduledb, moduleChardb
 
-	local private = self[PRIVATE]
-	if type(self.OnInitialize) == "function"  then
-		self:OnInitialize(moduledb, moduledbNew, moduleChardb, moduleChardbNew)
-	end
+    local private = self[PRIVATE]
+    if type(self.OnInitialize) == "function"  then
+        self:OnInitialize(moduledb, moduledbNew, moduleChardb, moduleChardbNew)
+    end
 end
 
 local function Lib_CallAllAddonsAndEnabledModules(method, ...)
-	local _, addon
-	for _, addon in ipairs(lib._addonList) do
-		local func = addon[method]
-		if type(func) == "function" then
-			func(addon, ...)
-		end
+    local _, addon
+    for _, addon in ipairs(lib._addonList) do
+        local func = addon[method]
+        if type(func) == "function" then
+            func(addon, ...)
+        end
 
-		Addon_CallAllEnabledModules(addon, method, ...)
-	end
+        Addon_CallAllEnabledModules(addon, method, ...)
+    end
 end
 
 local function Lib_CheckInitDB(addon)
-	local private = addon[PRIVATE]
-	local db, dbIsNew = lib._SetupTable(_G, private.dbName)
-	addon.db = db
+    local private = addon[PRIVATE]
+    local db, dbIsNew = lib._SetupTable(_G, private.dbName)
+    addon.db = db
 
-	local chardb, chardbIsNew
+    local chardb, chardbIsNew
 
-	if db and private.hasCharDB then
-		if type(private.hasCharDB) == "string" then
-			chardb, chardbIsNew = lib._SetupTable(_G, private.hasCharDB)
-			addon.chardb = chardb
-		else
-			local profileName = addon:GetCurProfileName()
-			local profiles = lib._SetupTable(db, "profiles")
-			chardb, chardbIsNew = lib._SetupTable(profiles, profileName)
-			addon.chardb = chardb
-		end
-	end
+    if db and private.hasCharDB then
+        if type(private.hasCharDB) == "string" then
+            chardb, chardbIsNew = lib._SetupTable(_G, private.hasCharDB)
+            addon.chardb = chardb
+        else
+            local profileName = addon:GetCurProfileName()
+            local profiles = lib._SetupTable(db, "profiles")
+            chardb, chardbIsNew = lib._SetupTable(profiles, profileName)
+            addon.chardb = chardb
+        end
+    end
 
-	if type(addon.OnInitialize) == "function" then
-		addon:OnInitialize(db, dbIsNew, chardb, chardbIsNew)
-	end
+    if type(addon.OnInitialize) == "function" then
+        addon:OnInitialize(db, dbIsNew, chardb, chardbIsNew)
+    end
 end
 
 local function Lib_ApplyAllBindings()
-	local name, button
-	for name, button in pairs(lib._bindingList) do
-		ClearOverrideBindings(button)
-		local key1, key2 = GetBindingKey(name)
-		if key2 then
-			SetOverrideBindingClick(button, false, key2, button:GetName())
-		end
+    local name, button
+    for name, button in pairs(lib._bindingList) do
+        ClearOverrideBindings(button)
+        local key1, key2 = GetBindingKey(name)
+        if key2 then
+            SetOverrideBindingClick(button, false, key2, button:GetName())
+        end
 
-		if key1 then
-			SetOverrideBindingClick(button, false, key1, button:GetName())
-		end
-	end
+        if key1 then
+            SetOverrideBindingClick(button, false, key1, button:GetName())
+        end
+    end
 end
 
 local function EventFrame_TryUpdateBindings(self)
-	if InCombatLockdown() then
-		self.hasPending = 1 -- Delay call
-	else
-		Lib_ApplyAllBindings()
-	end
+    if InCombatLockdown() then
+        self.hasPending = 1 -- Delay call
+    else
+        Lib_ApplyAllBindings()
+    end
 end
 
 local frame = lib._SetupTable(lib, "_eventFrame", 1)
@@ -1002,44 +1002,44 @@ local frame = lib._SetupTable(lib, "_eventFrame", 1)
 frame:RegisterEvent("PLAYER_LOGIN")
 
 frame:SetScript("OnEvent", function(self, event, arg1)
-	if event == "PLAYER_LOGIN" then
-		Lib_UpdatePlayerInfo()
+    if event == "PLAYER_LOGIN" then
+        Lib_UpdatePlayerInfo()
 
-		local _, addon
-		for _, addon in ipairs(lib._addonList) do
-			lib.CopyPlayerInfo(addon)
-			Lib_CheckInitDB(addon)
-		end
+        local _, addon
+        for _, addon in ipairs(lib._addonList) do
+            lib.CopyPlayerInfo(addon)
+            Lib_CheckInitDB(addon)
+        end
 
-		for _, addon in ipairs(lib._addonList) do
-			Addon_EnumModules(addon, Module_InitializeDB, addon.db, addon.chardb)
-		end
+        for _, addon in ipairs(lib._addonList) do
+            Addon_EnumModules(addon, Module_InitializeDB, addon.db, addon.chardb)
+        end
 
-		for _, addon in ipairs(lib._addonList) do
-			addon[PRIVATE].initDone = 1
+        for _, addon in ipairs(lib._addonList) do
+            addon[PRIVATE].initDone = 1
 
-			if type(addon.OnModulesInitDone) == "function" then
-				addon:OnModulesInitDone()
-			end
-		end
+            if type(addon.OnModulesInitDone) == "function" then
+                addon:OnModulesInitDone()
+            end
+        end
 
-		self:RegisterEvent("PLAYER_REGEN_DISABLED")
-		self:RegisterEvent("PLAYER_REGEN_ENABLED")
-		self:RegisterEvent("UPDATE_BINDINGS")
-		EventFrame_TryUpdateBindings(self)
+        self:RegisterEvent("PLAYER_REGEN_DISABLED")
+        self:RegisterEvent("PLAYER_REGEN_ENABLED")
+        self:RegisterEvent("UPDATE_BINDINGS")
+        EventFrame_TryUpdateBindings(self)
 
-	elseif event == "UPDATE_BINDINGS" then
-		EventFrame_TryUpdateBindings(self)
+    elseif event == "UPDATE_BINDINGS" then
+        EventFrame_TryUpdateBindings(self)
 
-	elseif event == "PLAYER_REGEN_DISABLED" then
-		Lib_CallAllAddonsAndEnabledModules("OnEnterCombat")
+    elseif event == "PLAYER_REGEN_DISABLED" then
+        Lib_CallAllAddonsAndEnabledModules("OnEnterCombat")
 
-	elseif event == "PLAYER_REGEN_ENABLED" then
-		if self.hasPending then
-			self.hasPending = nil
-			Lib_ApplyAllBindings()
-		end
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        if self.hasPending then
+            self.hasPending = nil
+            Lib_ApplyAllBindings()
+        end
 
-		Lib_CallAllAddonsAndEnabledModules("OnLeaveCombat")
-	end
+        Lib_CallAllAddonsAndEnabledModules("OnLeaveCombat")
+    end
 end)

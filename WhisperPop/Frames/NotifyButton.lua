@@ -15,11 +15,11 @@ local button = addon.templates.CreateIconButton("WhisperPopNotifyButton", UIPare
 addon.notifyButton = button
 
 addon.frame:HookScript("OnShow", function()
-	button:SetChecked(true)
+    button:SetChecked(true)
 end)
 
 addon.frame:HookScript("OnHide", function()
-	button:SetChecked(false)
+    button:SetChecked(false)
 end)
 
 button:SetPoint("CENTER", 0, 160)
@@ -38,66 +38,66 @@ button:SetScript("OnDragStart", button.StartMoving)
 button:SetScript("OnDragStop", button.StopMovingOrSizing)
 
 button:SetScript("OnClick", function(self)
-	GameTooltip:Hide()
-	addon:ToggleFrame()
+    GameTooltip:Hide()
+    addon:ToggleFrame()
 end)
 
 button:SetScript("OnEnter", function(self)
-	GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-	GameTooltip:AddLine(L["title"])
-	addon:AddTooltipText(GameTooltip)
-	GameTooltip:Show()
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+    GameTooltip:AddLine(L["title"])
+    addon:AddTooltipText(GameTooltip)
+    GameTooltip:Show()
 end)
 
 button:SetScript("OnLeave", function(self)
-	GameTooltip:Hide()
+    GameTooltip:Hide()
 end)
 
 local function Button_OnUpdate(self, elapsed)
-	self.elapsed = (self.elapsed or 0) + elapsed
-	if self.elapsed > 0.5 then
-		self.elapsed = 0
-		if self.icon:IsShown() then
-			self.icon:Hide()
-		else
-			self.icon:Show()
-		end
-	end
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed > 0.5 then
+        self.elapsed = 0
+        if self.icon:IsShown() then
+            self.icon:Hide()
+        else
+            self.icon:Show()
+        end
+    end
 end
 
 addon:RegisterEventCallback("OnListUpdate", function()
-	local name = addon:GetNewMessage()
-	if name == button.name then
-		return
-	end
+    local name = addon:GetNewMessage()
+    if name == button.name then
+        return
+    end
 
-	button.name = name
-	button.elapsed = 0
-	button.icon:Show()
-	if name then
-		button.icon:SetDesaturated(false)
-		button.text:SetText(name)
-		button:SetScript("OnUpdate", Button_OnUpdate)
-	else
-		button.icon:SetDesaturated(true)
-		button.text:SetText()
-		button:SetScript("OnUpdate", nil)
-	end
+    button.name = name
+    button.elapsed = 0
+    button.icon:Show()
+    if name then
+        button.icon:SetDesaturated(false)
+        button.text:SetText(name)
+        button:SetScript("OnUpdate", Button_OnUpdate)
+    else
+        button.icon:SetDesaturated(true)
+        button.text:SetText()
+        button:SetScript("OnUpdate", nil)
+    end
 end)
 
 addon:RegisterEventCallback("OnResetFrames", function()
-	button:ClearAllPoints()
-	button:SetPoint("CENTER", 0, 160)
+    button:ClearAllPoints()
+    button:SetPoint("CENTER", 0, 160)
 end)
 
 addon:RegisterOptionCallback("notifyButton", function(value)
-	if value then
-		button:Show()
-	else
-		button:Hide()
-	end
+    if value then
+        button:Show()
+    else
+        button:Hide()
+    end
 end)
 
 addon:RegisterOptionCallback("buttonScale", function(value)
-	button:SetScale(value / 100)
+    button:SetScale(value / 100)
 end)

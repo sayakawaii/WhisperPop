@@ -44,11 +44,11 @@ frame.text:SetPoint("LEFT", frame.icon, "RIGHT", 6, 0)
 frame.text:SetTextColor(1, 1, 1)
 
 frame:SetScript("OnHide", function(self)
-	self:Hide()
-	if GetMouseFocus() ~= curButton then
-		addon.frame.list:TextureButton("highlightTexture")
-	end
-	curButton, curData, curName = nil
+    self:Hide()
+    if GetMouseFocus() ~= curButton then
+        addon.frame.list:TextureButton("highlightTexture")
+    end
+    curButton, curData, curName = nil
 end)
 
 local protectCheck = CreateFrame("CheckButton", frame:GetName().."ProtectCheck", frame, "InterfaceOptionsCheckButtonTemplate")
@@ -59,19 +59,19 @@ checkText:SetText(L["protected"])
 protectCheck:SetHitRectInsets(0, -checkText:GetWidth(), 0, 0)
 
 protectCheck:SetScript("OnClick", function(self)
-	if not curData then
-		return
-	end
+    if not curData then
+        return
+    end
 
-	if self:GetChecked() then
-		curData.protected = 1
-		checkText:SetTextColor(1, 0, 0)
-	else
-		curData.protected = nil
-		checkText:SetTextColor(1, 1, 1)
-	end
+    if self:GetChecked() then
+        curData.protected = 1
+        checkText:SetTextColor(1, 0, 0)
+    else
+        curData.protected = nil
+        checkText:SetTextColor(1, 1, 1)
+    end
 
-	addon:BroadcastEvent("OnListUpdate")
+    addon:BroadcastEvent("OnListUpdate")
 end)
 
 -- The ScrollingMessageFrame that displays message text lines
@@ -107,128 +107,128 @@ local SINGLE_HEIGHT = testFont:GetHeight()
 
 frame:EnableMouseWheel(true)
 frame:SetScript("OnMouseWheel", function(self, delta)
-	if delta == 1 then
-		if IsShiftKeyDown() then
-			list:ScrollToTop()
-		else
-			list:ScrollUp()
-		end
-	elseif delta == -1 then
-		if IsShiftKeyDown() then
-			list:ScrollToBottom()
-		else
-			list:ScrollDown()
-		end
-	end
+    if delta == 1 then
+        if IsShiftKeyDown() then
+            list:ScrollToTop()
+        else
+            list:ScrollUp()
+        end
+    elseif delta == -1 then
+        if IsShiftKeyDown() then
+            list:ScrollToBottom()
+        else
+            list:ScrollDown()
+        end
+    end
 end)
 
 function frame:IsReading()
-	if self:IsShown() then
-		return curName
-	end
+    if self:IsShown() then
+        return curName
+    end
 end
 
 function frame:UpdateHeight()
-	if totalHeight < SINGLE_HEIGHT then
-		totalHeight = SINGLE_HEIGHT
-	end
+    if totalHeight < SINGLE_HEIGHT then
+        totalHeight = SINGLE_HEIGHT
+    end
 
-	if totalHeight > MESSAGE_MAX_HEIGHT then
-		totalHeight = MESSAGE_MAX_HEIGHT
-	end
+    if totalHeight > MESSAGE_MAX_HEIGHT then
+        totalHeight = MESSAGE_MAX_HEIGHT
+    end
 
-	self:SetHeight(max(totalHeight, MESSAGE_MIN_HEIGHT) + MESSAGE_ADD_HEIGHT + 16)
-	list:SetHeight(totalHeight + 2)
+    self:SetHeight(max(totalHeight, MESSAGE_MIN_HEIGHT) + MESSAGE_ADD_HEIGHT + 16)
+    list:SetHeight(totalHeight + 2)
 end
 
 function frame:AddMessage(text, inform, timeStamp, update)
-	if inform and addon.db.receiveOnly then
-		return
-	end
+    if inform and addon.db.receiveOnly then
+        return
+    end
 
-	local r, g, b
-	if inform then
-		r, g, b = 0.5, 0.5, 0.5
-	else
-		local color
-		if curData and curData.class == "BN" then
-			color = ChatTypeInfo["BN_WHISPER"]
-		else
-			color = ChatTypeInfo["WHISPER"]
-		end
-		r, g, b = color.r, color.g, color.b
-	end
+    local r, g, b
+    if inform then
+        r, g, b = 0.5, 0.5, 0.5
+    else
+        local color
+        if curData and curData.class == "BN" then
+            color = ChatTypeInfo["BN_WHISPER"]
+        else
+            color = ChatTypeInfo["WHISPER"]
+        end
+        r, g, b = color.r, color.g, color.b
+    end
 
-	local term, tag
-	for tag in gmatch(text, "%b{}") do
-		term = strlower(gsub(tag, "[{}]", ""))
-		local result = ICON_TAG_LIST[term]
-		local icon = result and ICON_LIST[result]
-		if icon then
-			text = gsub(text, tag, icon.."0|t")
-		end
-	end
+    local term, tag
+    for tag in gmatch(text, "%b{}") do
+        term = strlower(gsub(tag, "[{}]", ""))
+        local result = ICON_TAG_LIST[term]
+        local icon = result and ICON_LIST[result]
+        if icon then
+            text = gsub(text, tag, icon.."0|t")
+        end
+    end
 
-	if addon.db.time then
-		text = "|cffffd200"..timeStamp.."|r "..text
-	end
+    if addon.db.time then
+        text = "|cffffd200"..timeStamp.."|r "..text
+    end
 
-	list:AddMessage(text, r, g, b)
+    list:AddMessage(text, r, g, b)
 
-	if totalHeight < MESSAGE_MAX_HEIGHT then
-		testFont:SetText(text)
-		totalHeight = totalHeight + testFont:GetHeight()
-	end
+    if totalHeight < MESSAGE_MAX_HEIGHT then
+        testFont:SetText(text)
+        totalHeight = totalHeight + testFont:GetHeight()
+    end
 
-	if update then
-		self:UpdateHeight()
-	end
+    if update then
+        self:UpdateHeight()
+    end
 end
 
 function frame:SetData(button, data)
-	if curData == data then
-		return
-	end
+    if curData == data then
+        return
+    end
 
-	list:Clear()
+    list:Clear()
 
-	curButton, curData, curName = button, data, data and data.name
-	if not data then
-		self:Hide()
-		return
-	end
+    curButton, curData, curName = button, data, data and data.name
+    if not data then
+        self:Hide()
+        return
+    end
 
-	if data.protected then
-		protectCheck:SetChecked(true)
-		checkText:SetTextColor(1, 0, 0)
-	else
-		protectCheck:SetChecked(false)
-		checkText:SetTextColor(1, 1, 1)
-	end
+    if data.protected then
+        protectCheck:SetChecked(true)
+        checkText:SetTextColor(1, 0, 0)
+    else
+        protectCheck:SetChecked(false)
+        checkText:SetTextColor(1, 1, 1)
+    end
 
-	addon.templates.ShowPlayerInfo(data, self.icon, self.text, 1)
-	totalHeight = 0
+    addon.templates.ShowPlayerInfo(data, self.icon, self.text, 1)
+    totalHeight = 0
 
-	local i, text, inform, timeStamp
-	for i = 1, #data.messages do
-		text, inform, timeStamp = addon:DecodeMessage(data.messages[i])
-		self:AddMessage(text, inform, timeStamp)
-	end
+    local i, text, inform, timeStamp
+    for i = 1, #data.messages do
+        text, inform, timeStamp = addon:DecodeMessage(data.messages[i])
+        self:AddMessage(text, inform, timeStamp)
+    end
 
-	self:Show()
-	self:UpdateHeight()
-	list:ScrollToBottom()
+    self:Show()
+    self:UpdateHeight()
+    list:ScrollToBottom()
 end
 
 local function StartCounting()
-	frame:StartCounting()
+    frame:StartCounting()
 end
 
 local function StopCounting()
-	frame:StopCounting()
-	if curButton then
-		addon.frame.list:TextureButton("highlightTexture", curButton)
-	end
+    frame:StopCounting()
+    if curButton then
+        addon.frame.list:TextureButton("highlightTexture", curButton)
+    end
 end
 
 frame:SetScript("OnEnter", StopCounting)
@@ -244,18 +244,18 @@ list:SetScript("OnHyperlinkEnter", StopCounting)
 list:SetScript("OnHyperlinkLeave", StartCounting)
 
 local function CreateScrollButton(name, parentFuncName)
-	local button = CreateFrame("Button", list:GetName().."Button"..name, list)
-	button:SetWidth(24)
-	button:SetHeight(24)
-	button:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-Scroll"..name.."-Up")
-	button:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIcon-Scroll"..name.."-Down")
-	button:SetDisabledTexture("Interface\\ChatFrame\\UI-ChatIcon-Scroll"..name.."-Disabled")
-	button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
-	button.parentFuncName = parentFuncName
-	button:SetScript("OnClick", function(self) list[self.parentFuncName](list) end)
-	button:SetScript("OnEnter", StopCounting)
-	button:SetScript("OnLeave", StartCounting)
-	return button
+    local button = CreateFrame("Button", list:GetName().."Button"..name, list)
+    button:SetWidth(24)
+    button:SetHeight(24)
+    button:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-Scroll"..name.."-Up")
+    button:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIcon-Scroll"..name.."-Down")
+    button:SetDisabledTexture("Interface\\ChatFrame\\UI-ChatIcon-Scroll"..name.."-Disabled")
+    button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+    button.parentFuncName = parentFuncName
+    button:SetScript("OnClick", function(self) list[self.parentFuncName](list) end)
+    button:SetScript("OnEnter", StopCounting)
+    button:SetScript("OnLeave", StartCounting)
+    return button
 end
 
 -- Scroll buttons
@@ -269,22 +269,22 @@ local upButton = CreateScrollButton("Up", "ScrollUp")
 upButton:SetPoint("BOTTOM", downButton, "TOP", 0, -6)
 
 addon:RegisterEventCallback("OnNewMessage", function(name, class, text, inform, timeStamp)
-	if frame:IsReading() == name then
-		frame:AddMessage(text, inform, timeStamp, 1)
-	end
+    if frame:IsReading() == name then
+        frame:AddMessage(text, inform, timeStamp, 1)
+    end
 end)
 
 addon.templates.CreateFlash(endButton)
 
 list:SetScript("OnUpdate", function(self, elapsed)
-	self.elapsed = (self.elapsed or 0) + elapsed
-	if self.elapsed > 0.2 then
-		self.elapsed = 0
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed > 0.2 then
+        self.elapsed = 0
 
-		if self:AtBottom() then
-			endButton:StopFlash()
-		else
-			endButton:StartFlash()
-		end
-	end
+        if self:AtBottom() then
+            endButton:StopFlash()
+        else
+            endButton:StartFlash()
+        end
+    end
 end)

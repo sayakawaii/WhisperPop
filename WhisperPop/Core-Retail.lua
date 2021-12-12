@@ -22,13 +22,12 @@ local min = min
 local max = max
 local GetPlayerInfoByGUID = GetPlayerInfoByGUID
 local BNGetNumFriends = BNGetNumFriends
-local BNGetFriendInfo = BNGetFriendInfo
-local BNGetFriendInfoByID = BNGetFriendInfoByID
+local BNGetFriendInfo = C_BattleNet.GetFriendAccountInfo
+local BNGetFriendInfoByID = C_BattleNet.GetAccountInfoByID
 local GMChatFrame_IsGM = GMChatFrame_IsGM
 local ChatFrame_GetMessageEventFilters = ChatFrame_GetMessageEventFilters
-local ChatEdit_ChooseBoxForSend = ChatEdit_ChooseBoxForSend
-local ChatEdit_ActivateChat = ChatEdit_ActivateChat
-local ChatEdit_ParseText = ChatEdit_ParseText
+local ChatFrame_SendTell = ChatFrame_SendTell
+local ChatFrame_SendBNetTell = ChatFrame_SendBNetTell
 local InviteUnit = InviteUnit
 local FriendsFrame_ShowDropdown = FriendsFrame_ShowDropdown
 local FriendsFrame_ShowBNDropdown = FriendsFrame_ShowBNDropdown
@@ -51,7 +50,7 @@ addon.MAX_MESSAGES = 500 -- Maximum messages stored for each conversation
 -- Message are saved in format of: [1/0][hh:mm:ss][contents]
 -- The first char is 1 if this message is inform, 0 otherwise
 function addon:EncodeMessage(text, inform)
-    local timeStamp = "["..date("%m/%d %H:%M:%S").."]"
+    local timeStamp = strsub(date(), 10, 17)
     return (inform and "1" or "0")..timeStamp..(text or ""), timeStamp
 end
 
@@ -65,8 +64,8 @@ function addon:DecodeMessage(line)
         inform = 1
     end
 
-    local timeStamp = strsub(line, 2, 17)
-    local text = strsub(line, 18)
+    local timeStamp = strsub(line, 2, 9)
+    local text = strsub(line, 10)
     return text, inform, timeStamp
 end
 
@@ -108,8 +107,9 @@ function addon:GetBNInfoFromTag(tag)
     local count = BNGetNumFriends()
     local i
     for i = 1, count do
-        local id, name, battleTag, _, _, _, _, online = BNGetFriendInfo(i)
-        --print("id "..id.." name "..name.." battleTag "..battleTag)
+        BNetAccountInfo = BNGetFriendInfo(i)
+        game = BNetAccountInfo.gameAccountInfo
+        local id, name, battleTag, online = BNetAccountInfo.bnetAccountID, BNetAccountInfo.accountName, BNetAccountInfo.battleTag, BNetAccountInfo.gameAccountInfo.isOnline
         if battleTag == tag then
             return id, name, online
         end
@@ -189,11 +189,11 @@ function addon:HandleAction(name, action)
         end
 
     elseif action == "WHISPER" then
-            if bnName then
-                ChatFrame_SendBNetTell(bnName)
-            else
-                ChatFrame_SendTell(name)
-            end
+        if bnName then
+            ChatFrame_SendBNetTell(bnName)
+        else
+            ChatFrame_SendTell(name)
+        end
     end
 end
 
@@ -306,9 +306,9 @@ function addon:ProcessChatMsg(name, class, text, inform, bnid)
     end
 
     -- Names must be in the "name-realm" format except for BN friends
-    if class == "BN" then
-        name = select(3, BNGetFriendInfoByID(bnid or 0)) -- Seemingly better than my original solution, credits to Warbaby
-        --print(" name "..name)
+    if class == "BN" then        
+        BNetAccountInfo = BNGetFriendInfoByID(bnid or 0)
+        name = BNetAccountInfo.battleTag
         if not name then
             return
         end

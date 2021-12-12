@@ -23,27 +23,42 @@ local configButton = addon.templates.CreateIconButton(addon.frame:GetName().."Co
 configButton:SetPoint("TOPLEFT", 11, -9)
 
 configButton:SetScript("OnEnter", function(self)
-	GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-	GameTooltip:ClearLines()
-	GameTooltip:AddLine(SETTINGS)
-	GameTooltip:AddLine(L["settings tooltip 1"], 1, 1, 1, 1)
-	GameTooltip:AddLine(L["settings tooltip 2"], 1, 1, 1, 1)
-	GameTooltip:Show()
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+    GameTooltip:ClearLines()
+    GameTooltip:AddLine(SETTINGS)
+    GameTooltip:AddLine(L["settings tooltip 1"], 1, 1, 1, 1)
+    GameTooltip:AddLine(L["settings tooltip 2"], 1, 1, 1, 1)
+    GameTooltip:Show()
 end)
 
 configButton:SetScript("OnLeave", function(self)
-	GameTooltip:Hide()
+    GameTooltip:Hide()
 end)
 
 configButton:SetScript("OnClick", function(self)
-	if IsShiftKeyDown() then
-		addon:PopupShowConfirm(L["clear all confirm"], addon.Clear, addon)
-	else
-		addon.optionFrame:Open()
-	end
+    if IsShiftKeyDown() then
+        addon:PopupShowConfirm(L["clear all confirm"], addon.Clear, addon)
+    else
+        addon.optionFrame:Open()
+    end
 end)
 
 local frame = UICreateInterfaceOptionPage("WhisperPopOptionFrame", L["title"], L["desc"])
+
+-- local f = CreateFrame("Frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+-- f.name = L["WhisperPop"]
+-- InterfaceOptions_AddCategory(f)
+-- do
+--     local t = f:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+--     t:SetText(L["WhisperPop123456"])
+--     t:SetPoint("TOPLEFT", f, 20, -15)
+-- end
+
+-- do
+--     local t = f:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+--     t:SetText(L["Feedback"] .. "  farmer1992@gmail.com")
+--     t:SetPoint("TOPLEFT", f, 20, -50)
+-- end
 addon.optionFrame = frame
 
 local generalGroup = frame:CreateMultiSelectionGroup(L["general options"])
@@ -68,43 +83,43 @@ generalGroup:AddButton(L["apply third-party filters"], "applyFilters")
 generalGroup:AddButton(L["save messages"], "save")
 
 function generalGroup:OnCheckInit(value)
-	return addon.db[value]
+    return addon.db[value]
 end
 
 function generalGroup:OnCheckChanged(value, checked)
-	addon.db[value] = checked
-	addon:BroadcastOptionEvent(value, checked)
+    addon.db[value] = checked
+    addon:BroadcastOptionEvent(value, checked)
 
-	if value == "sound" and checked then
-		addon:PlaySound()
-	end
+    if value == "sound" and checked then
+        addon:PlaySound()
+    end
 end
 
 addon:RegisterOptionCallback("showRealm", function(value)
-	if value then
-		foreignCheck:Enable()
-	else
-		foreignCheck:Disable()
-	end
+    if value then
+        foreignCheck:Enable()
+    else
+        foreignCheck:Disable()
+    end
 end)
 
 local function Slider_OnSliderInit(self)
-	return addon.db[self.key]
+    return addon.db[self.key]
 end
 
 local function Slider_OnSliderChanged(self, value)
-	addon.db[self.key] = value
-	addon:BroadcastOptionEvent(self.key, value)
+    addon.db[self.key] = value
+    addon:BroadcastOptionEvent(self.key, value)
 end
 
 local function CreateSlider(text, key, fmt)
-	local config = addon.DB_DEFAULTS[key]
-	local slider = frame:CreateSlider(text, config.min, config.max, config.step, fmt)
-	slider.key = key
-	slider.text:SetTextColor(1, 1, 1)
-	slider.OnSliderInit = Slider_OnSliderInit
-	slider.OnSliderChanged = Slider_OnSliderChanged
-	return slider
+    local config = addon.DB_DEFAULTS[key]
+    local slider = frame:CreateSlider(text, config.min, config.max, config.step, fmt)
+    slider.key = key
+    slider.text:SetTextColor(1, 1, 1)
+    slider.OnSliderInit = Slider_OnSliderInit
+    slider.OnSliderChanged = Slider_OnSliderChanged
+    return slider
 end
 
 local frameLabel = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -124,11 +139,11 @@ local heightSlider = CreateSlider(L["list height"], "listHeight")
 heightSlider:SetPoint("LEFT", widthSlider, "RIGHT", 24, 0)
 
 local function OnResetFrames()
-	notifySlider:SetValue(100)
-	mainSlider:SetValue(100)
-	widthSlider:SetValue(addon.DB_DEFAULTS.listWidth.default)
-	heightSlider:SetValue(addon.DB_DEFAULTS.listHeight.default)
-	addon:BroadcastEvent("OnResetFrames")
+    notifySlider:SetValue(100)
+    mainSlider:SetValue(100)
+    widthSlider:SetValue(addon.DB_DEFAULTS.listWidth.default)
+    heightSlider:SetValue(addon.DB_DEFAULTS.listHeight.default)
+    addon:BroadcastEvent("OnResetFrames")
 end
 
 local resetButton = frame:CreatePressButton(L["reset frames"])
@@ -136,7 +151,7 @@ resetButton:SetWidth(120)
 resetButton:SetPoint("TOPLEFT", frameLabel, "BOTTOMLEFT", 8, -138)
 
 function resetButton:OnClick()
-	addon:PopupShowConfirm(L["reset frames confirm"], OnResetFrames)
+    addon:PopupShowConfirm(L["reset frames confirm"], OnResetFrames)
 end
 
 local clearButton = frame:CreatePressButton(L["clear all"])
@@ -144,5 +159,5 @@ clearButton:SetWidth(120)
 clearButton:SetPoint("LEFT", resetButton, "RIGHT", 8, 0)
 
 function clearButton:OnClick()
-	addon:PopupShowConfirm(L["clear all confirm"], addon.Clear, addon)
+    addon:PopupShowConfirm(L["clear all confirm"], addon.Clear, addon)
 end
